@@ -1,63 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-    <!--B-->
-
-    <script language="javascript" src="rssajax6.js"></script>
-
-    <!--C-->
-
-    <style type="text/css">
-
-        #chan_items { margin: 20px; }
-
-        #chan_items #item { margin-bottom: 10px; }
-
-        #chan_items #item #item_title { font-weight: bold; }
-
-    </style>
-
+    <meta charset="UTF-8">
+    <title>Title</title>
 </head>
-
 <body>
 
-<!--A-->
 
-<form name="rssform" onsubmit="getRSS(); return false;">
+<div>
+    <input id="rssText" type="text">
 
-    <select name="rssurl">
-
-        <option value="https://news.mail.ru/rss">mail</option>
-
-        <option value="http://4pda.ru/feed/rss/">google RSS feed</option>
-
-    </select>
-
-    <input type="submit" value="fetch rss feed" />
-
-</form>
-
-
-
-<div id="chan">
-
-    <div id="chan_title"></div>
-
-    <div id="chan_link"></div>
-
-    <div id="chan_description"></div>
-
-    <a id="chan_image_link" href=""></a>
-
-    <div id="chan_items"></div>
-
-    <div id="chan_pubDate"></div>
-
-    <div id="chan_copyright"></div>
-
+    <button id="addRssButton">Добавить Rss ленту </button>
+    <div id="msgAlert"></div>
 </div>
+<button id="rssButton">Показать </button>
+<button id="updateRss">Обновить ленту </button>
+<button id="rssButtonSortTitle">Отсортировать по заголовку</button>
+<button id="rssButtonSortDatePubl">Отсортировать по времени публикации </button>
+<button id="rss">показать ленты </button>
+
+<div id="textarea"></div>
+
+<script src="feednami-client-v1.0.2.min.js"></script>
+<script src="../dist/myRss/rss.js"></script>
+
+
 
 </body>
-
 </html>

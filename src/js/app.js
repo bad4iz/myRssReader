@@ -1,208 +1,330 @@
-/**
- * Created by bad4iz on 09.03.2017.
- */
-'use strict';
-// Создаётся объект promise
-// (function () {
-//     window.App = {
-//         Models:{},
-//         Views:{},
-//         Collections:{}
-//     };
-//
-//     App.Models.Rss = Backbone.Model.extend({
-//         defaults:{
-//             title:'',
-//             description: '',
-//             url: ''
-//         },
-//         // urlRoot: '/rssreader.php'
-//     });
-//
-//     App.Collections.RssCollection = Backbone.Collection.extend({
-//         model:   App.Models.Rss,
-//         url: '/rssreader.php'
-//     })
-//
-//
-//
-//
-// }());
-
-//
-// var xhr = new XMLHttpRequest();
-//
-// // 2. Конфигурируем его: GET-запрос на URL 'phones.json'
-// xhr.open('GET', 'http://4pda.ru/feed/rss', false);
-//
-// // 3. Отсылаем запрос
-// xhr.send();
-//
-// // 4. Если код ответа сервера не 200, то это ошибка
-// if (xhr.status != 200) {
-//     // обработать ошибку
-//     alert( xhr.status + ': ' + xhr.statusText ); // пример вывода: 404: Not Found
-// } else {
-//     // вывести результат
-//     document.write( xhr.responseText ); // responseText -- текст ответа.
-// }
-//
-
-let swing = false;
-
-
-const addRssButton = document.getElementById('addRssButton');
-const rssButton = document.getElementById('rssButton');
-const rssButtonSortTitle = document.getElementById('rssButtonSortTitle');
-const rssButtonSortDatePubl = document.getElementById('rssButtonSortDatePubl');
-const updateRss = document.getElementById('updateRss');
-const ss = document.getElementById('rss');
-ss.onclick = function () {
-    arrRss.forEach(item=>console.log(item));
-};
-
-const textRss = document.getElementById('rssText');
-const msgAlert = document.getElementById('msgAlert');
-const textarea = document.getElementById('textarea');
-
-let arrRss = [];
-let arrFeedRss = [];
-
-class Rss {
-    constructor (url){
-        this.rssUrl = url;
-    }
-    getRssUrl(){
-        return this.rssUrl;
-    }
+class FeedsView {
+  constructor() {
+    this.textarea = document.getElementById('textarea');
+  }
+  
+  view(feedsItem) {
+    feedsItem.forEach(item => this.textarea.appendChild(item.view()));
+  }
 }
 
-arrRss.push(new Rss('http://www.dailymail.co.uk/home/index.rss'));
-arrRss.push(new Rss('http://4pda.ru/feed/rss'));
+///////////////////////////////////////////////////
+//    Models
+////////////////////////////////////////////////////
 
-addRssButton.onclick = function () {
-    if(textRss.value &&  /^http/i.test(textRss.value)){
-        console.log('addRssButton');
-        arrRss.push(new Rss(textRss.value));
-        console.log(arrRss);
-        console.log(arrFeedRss);
-        textRss.value = '';
-    }
-};
-
-// показать
-rssButton.onclick = function () {
-    textarea.innerHTML = '';
-    arrFeedRss.forEach(item => item.views());
-    console.log('показать');
-};
-
-rssButtonSortTitle.onclick = function () {
-    textarea.innerHTML = '';
-    arrFeedRss.sort(ItemRss.sortTitle);
-    arrFeedRss.forEach(item => item.views());
-    console.log('rssButtonSortTitle');
-};
-
-rssButtonSortDatePubl.onclick = function () {
-    textarea.innerHTML = '';
-    arrFeedRss.sort(ItemRss.sortDate);
-    arrFeedRss.forEach(item => item.views());
-  console.log('rssButtonSortDatePubl');
-};
-
-// обновить
-updateRss.onclick = function () {
-    textarea.innerHTML = '';
-    arrRss = [];
-    arrRss.forEach(rss => getPromRss(rss.getRssUrl()));
-    arrFeedRss.forEach(item => item.views());
-    console.log('обновить');
-};
-
-function superFeedsUpdate() {
-
+class ItemFeed {
+  constructor(obj) {
+    this.id = ItemFeed.id++;
+    this.title = obj.title;
+    this.description = obj.description;
+    this.pubDate = obj.pubDate;
+    this.pubdate_ms = obj.pubdate_ms;
+    this.author = obj.author;
+    this.link = obj.link;
+    this.isRead = false;
+    this.idFeedModel = obj.idFeedModel;
+  }
+  read(){
+    this.isRead = !this.isRead;
+    return this.isRead;
+  }
+  view() {
+    let div = document.createElement('div');
+    let a = document.createElement('a');
+    let inputIsRead = document.createElement('input');
+    inputIsRead.type = 'checkbox';
+    let dataPubl = document.createElement('p');
+    dataPubl.appendChild(document.createTextNode(this.pubdate_ms));
+    a.href = this.link;
+    let h2 = document.createElement('h2');
+    h2.appendChild(document.createTextNode(this.title));
+    a.appendChild(h2);
+    div.appendChild(dataPubl);
+    div.appendChild(a);
+    div.appendChild(inputIsRead);
+    return div;
+  }
 }
+ItemFeed.id = 0;
 
-function getFeedRss(url) {
+class FeedModel {
+  constructor(url) {
+    if (/^http/i.test(url)) {
+      this.idFeedModel = FeedModel.id++;
+      this.rssUrl = url;
+      this._feedsItem = [];
+      // this.feedsPromis();
+      this.isUnsubscribe = false;
+    } else {
+      throw new Error('не содержит урл!');
+    }
+  }
+  getFeedRssPromis() {
     return new Promise((resolve, reject) => {
-        feednami.load(url, function (result) {
-            if (result.error) {
-                reject(result.error);
-            }
-            else {
-                let entries = result.feed.entries;
-                resolve(entries);
-            }
-        })
+      feednami.load(this.rssUrl, function(result) {
+        if (result.error) {
+          reject(result.error);
+        }
+        else {
+          let entries = result.feed.entries;
+          resolve(entries);
+        }
+      })
     });
+  }
+  
+  feedsPromis() {
+    return new Promise((resolve, reject) => {
+      let feedsPromise = this.getFeedRssPromis();
+      feedsPromise
+      .then(
+         items => {
+           for (let item of items) {
+             item.idFeedModel = this.idFeedModel;
+             this._feedsItem.push(new ItemFeed(item));
+           }
+           resolve(true);
+         },
+         error => {
+           console.log("Ошибка: " + error);
+           msgAlert.innerHTML = "Ошибка: Проверте адресс! Скорей всего он не правильный "; // error - аргумент reject
+           reject(result.error);
+         }
+      );
+    });
+  }
+  
+  get feeds() {
+    return this._feedsItem;
+  }
+  
+  get url() {
+    return this.rssUrl;
+  }
+  unsubscribe(){
+    this.isUnsubscribe = !this.isUnsubscribe;
+    return this.isUnsubscribe;
+  }
+  
+  view(){
+    let p = document.createElement('p');
+    p.appendChild(document.createTextNode(this.url));
+    return p;
+  }
 }
+FeedModel.id = 0;
+///////////////////////////////////////
+//       Collections
+//////////////////////////////////////
 
-function getPromRss(url) {
-    let feedRss = getFeedRss(url);
-    feedRss
-        .then(
-            entries => {
-                arrRss = entries;
-                for (let entry of entries) {
-                    let itemRss = new ItemRss(entry.title, entry.summary, entry.link, entry.pubdate);
-                    arrFeedRss.push(itemRss);
-                }
-                // console.log(entries);
-                arrFeedRss.sort(ItemRss.sortDate);
-                arrFeedRss.forEach(item => item.views())
-            },
-            error => {
-                console.log("Ошибка: " + error);
-                msgAlert.innerHTML = "Ошибка: Проверте адресс! Скорей всего он не правильный "; // error - аргумент reject
-            }
-        );
-}
-
-
-
-class ItemRss {
-    constructor(title, discription, url,date) {
-        this.parentRss = document.querySelector('#textarea');
-        this.title = title;
-        this.discription = discription;
-        this.url = url;
-        this.date = Date.parse(date);
-        this.time = new Date(this.date)
+class FeedsCollection {
+  constructor() {
+    this.feeds = [];
+    this.feedsItem = [];
+    this.feedsView = (new FeedsView());
+    
+  }
+ 
+  set feed(rssFeed) {
+    if (rssFeed instanceof FeedModel) {
+      let feedsPromise = rssFeed.feedsPromis();
+      feedsPromise
+      .then(() => {
+        this.feeds.push(rssFeed);
+        this.feedsItem = this.feedsItem.concat(rssFeed.feeds);
+        this.visibleAllFeeds();
+      });
+    } else {
+      throw new Error('неправильный класс!');
     }
-    views (){
-        let div = document.createElement('div');
-        div.className = "itemRss";
-
-        let p = document.createElement('p');
-        let a = document.createElement('a');
-        a.href = `${this.url}`;
-        a.innerHTML = `${this.title}`;
-
-        div.appendChild(a);
-        p.innerHTML = `${this.discription} <sub>${this.time.getDate()+ "." +this.time.getMonth() + "  " +this.time.getHours() + ":" + this.time.getMinutes() + ":" + this.time.getSeconds()}</sub>`;
-        div.appendChild(p);
-
-        // div.innerHTML = `<p>Ура!</p> ${this.title}`;
-        this.parentRss.appendChild(div);
+  }
+  
+  get feed() {
+    return this.feeds;
+  }
+  
+  visibleAllFeeds(fn) {
+    if (typeof fn !== "function") {
+      fn = ''
     }
+    while (textarea.hasChildNodes()) {
+      textarea.removeChild(textarea.lastChild);
+    }
+    this.feedsView.view(this.feedsItem.sort(fn));
+  }
+  
+  deleteFeed(feed) {
+    if (!(feed instanceof FeedModel)) {
+      throw new Error('неправильный класс!');
+    }
+    let index = this.feeds.indexOf(feed);
+    if (index === -1) {
+      console.error("нет такого элемента");
+      return
+    }
+    this.feeds.splice(index, 1);
+    this.redesign();
+    console.log("объект удален")
+  }
+  redesign(){
+    this.feedsItem = [];
+    this.feeds.forEach(item=> this.feedsItem = this.feedsItem.concat(item.feeds));
+    this.visibleAllFeeds();
+  }
+  setfeedsItem(arr) {
+    if (!Array.isArray(arr)) {
+      console.error("передали в feedsItem не массив");
+      return;
+    }
+    this.feedsItem = this.feedsItem.concat(arr);
+  }
+  view(){
+    console.log('FeedsCollection')
+  }
 }
-ItemRss.sortDate = function (a, b) {
-    return a.date - b.date;
-};
 
-ItemRss.sortDateRevers = function (a, b) {
-    return b.date - a.date;
-};
+let feedsCollection = new FeedsCollection();
+try {
+  let a = new FeedModel('http://4pda.ru/feed/rss');
+  feedsCollection.feed = new FeedModel('http://4pda.ru/feed/rss');
+  feedsCollection.feed = new FeedModel('https://www.liteforex.ru/rss/company-news/');
+  feedsCollection.feed = a;
+} catch (e) {
+  console.log(e.name + ': ' + e.message);
+}
 
-ItemRss.sortTitle = function (a, b) {
-    return a.title - b.title;
-};
 
-window.onload = function () {
-    textarea.innerHTML = '';
-    console.log('обновить');
-    // arrFeedRss.forEach(item => item.views());
-    console.log('показать');
-    arrRss.forEach(rss => getPromRss(rss.getRssUrl()));
-};
+///////////////////////////////////////////////////
+//
+//   Views
+//
+////////////////////////////////////////////////////
+/**
+ * показ списка подписок
+ */
+class FeedListView {
+  constructor(fileId) {
+    this.msgAlert = document.getElementById(fileId);
+  }
+  
+  view(arr) {
+    if (!Array.isArray(arr)) {
+      throw new Error('не массив!');
+    }
+    while (this.msgAlert.hasChildNodes()) {
+      this.msgAlert.removeChild(this.msgAlert.lastChild);
+    }
+    let div = document.createElement('div');
+    div.className = "FeedsView";
+    arr.forEach(item => {
+    this.msgAlert.appendChild(item.view());
+      let buttonIsUnsubscribe = document.createElement('input');
+      buttonIsUnsubscribe.type = 'button';
+      buttonIsUnsubscribe.value = 'удалить';
+      buttonIsUnsubscribe.onclick = function() {
+        const msgAlert = document.getElementById('msgAlert');
+  
+        while (msgAlert.hasChildNodes()) {
+          msgAlert.removeChild(msgAlert.lastChild);
+        }
+        feedsCollection.deleteFeed(item);
+        
+      };
+    this.msgAlert.appendChild(buttonIsUnsubscribe);
+    });
+  }
+}
+
+let feedListView = new FeedListView('msgAlert');
+
+class FeedView {
+  constructor(item) {
+    this.element = 'div';
+    console.log(item.author);
+  }
+
+  view() {
+    let elm = document.createElement(this.element);
+  }
+}
+
+
+///////////////////////////////////////////////////
+//    Controllers
+////////////////////////////////////////////////////
+
+/**
+ * кнопка добавление рсс ленты
+ * @constructor
+ */
+class ButtonAddController {
+  constructor() {
+    const addRssButton = document.getElementById('addRssButton');
+    const textRss = document.getElementById('rssText');
+  
+    addRssButton.onclick = function() {
+      feeds.feed = new RssFeedModel(textRss.value);
+      textRss.value = '';
+    };
+  }
+}
+
+/**
+ * кнопка показать ленты
+ *
+ * @constructor
+ */
+class ButtonRssController {
+  constructor() {
+    const rss = document.getElementById('rss');
+    const msgAlert = document.getElementById('msgAlert');
+    rss.onclick = function() {
+      feedListView.view(feedsCollection.feed);
+    };
+  }
+}
+/**
+ *  кнопка сортировки по названию
+ */
+class ButtonSortTitle {
+  constructor() {
+    const buttonSortTitle = document.getElementById('rssButtonSortTitle');
+    const textarea = document.getElementById('textarea');
+    buttonSortTitle.onclick = function() {
+      while (textarea.hasChildNodes()) {
+        textarea.removeChild(textarea.lastChild);
+      }
+    
+      let sortTitle = function(one, two) {
+        return two.title - one.title;
+      };
+      feedsCollection.visibleAllFeeds(sortTitle)
+    }
+  }
+}
+
+/**
+ *  кнопка сортировки по дате публикации
+ */
+class ButtonSortDatePubl {
+  constructor() {
+    const buttonSortDatePubl = document.getElementById('rssButtonSortDatePubl');
+    const textarea = document.getElementById('textarea');
+    buttonSortDatePubl.onclick = function() {
+      while (textarea.hasChildNodes()) {
+        textarea.removeChild(textarea.lastChild);
+      }
+      let sortDatePubl = function (one, two){
+        return two.pubdate_ms  - one.pubdate_ms;
+      };
+        feedsCollection.visibleAllFeeds(sortDatePubl);
+    }
+  }
+}
+
+
+let buttonAddFeeds = new ButtonAddController();
+let buttonRss = new ButtonRssController();
+let buttonSortTitle = new ButtonSortTitle();
+let buttonSortDatePubl = new ButtonSortDatePubl();
+/////////////////////////////////////////////////////

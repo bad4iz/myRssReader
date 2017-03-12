@@ -1,0 +1,24 @@
+{
+  "name": "rss_reader",
+  "version": "0.2.0",
+  "description": "rss reader ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bad4iz/myRssReader.git"
+  },
+  "author": "bad4iz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bad4iz/myRssReader/issues"
+  },
+  "homepage": "https://github.com/bad4iz/myRssReader#readme",
+  "devDependencies": {
+    "babel-cli": "^6.23.0",
+    "babel-preset-env": "^1.2.1",
+    "babel-preset-es2015": "^6.22.0"
+  }
+}
