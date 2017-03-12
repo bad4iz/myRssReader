@@ -4,6 +4,75 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+///////////////////////////////////////////////////
+//
+//   Views
+//
+////////////////////////////////////////////////////
+/**
+ * показ списка подписок
+ */
+var FeedListView = function () {
+  function FeedListView(fileId) {
+    _classCallCheck(this, FeedListView);
+
+    this.msgAlert = document.getElementById(fileId);
+  }
+
+  _createClass(FeedListView, [{
+    key: 'view',
+    value: function view(arr) {
+      var _this = this;
+
+      if (!Array.isArray(arr)) {
+        throw new Error('не массив!');
+      }
+      while (this.msgAlert.hasChildNodes()) {
+        this.msgAlert.removeChild(this.msgAlert.lastChild);
+      }
+      var div = document.createElement('div');
+      div.className = "FeedsView";
+      arr.forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'urlFeed';
+        var buttonIsUnsubscribe = document.createElement('input');
+        buttonIsUnsubscribe.type = 'button';
+        buttonIsUnsubscribe.value = 'удалить подписку';
+        div.appendChild(item.view());
+        buttonIsUnsubscribe.onclick = function () {
+          var msgAlert = document.getElementById('msgAlert');
+          msgAlert.removeChild(div);
+          feedsCollection.deleteFeed(item);
+        };
+        div.appendChild(buttonIsUnsubscribe);
+        _this.msgAlert.appendChild(div);
+      });
+    }
+  }]);
+
+  return FeedListView;
+}();
+
+var feedListView = new FeedListView('msgAlert');
+
+var FeedView = function () {
+  function FeedView(item) {
+    _classCallCheck(this, FeedView);
+
+    this.element = 'div';
+    console.log(item.author);
+  }
+
+  _createClass(FeedView, [{
+    key: 'view',
+    value: function view() {
+      var elm = document.createElement(this.element);
+    }
+  }]);
+
+  return FeedView;
+}();
+
 var FeedsView = function () {
   function FeedsView() {
     _classCallCheck(this, FeedsView);
@@ -14,10 +83,10 @@ var FeedsView = function () {
   _createClass(FeedsView, [{
     key: 'view',
     value: function view(feedsItem) {
-      var _this = this;
+      var _this2 = this;
 
       feedsItem.forEach(function (item) {
-        return _this.textarea.appendChild(item.view());
+        return _this2.textarea.appendChild(item.view());
       });
     }
   }]);
@@ -58,13 +127,16 @@ var ItemFeed = function () {
       var inputIsRead = document.createElement('input');
       inputIsRead.type = 'checkbox';
       var dataPubl = document.createElement('p');
-      dataPubl.appendChild(document.createTextNode(this.pubdate_ms));
+      var description = document.createElement('p');
+      description.textContent = this.description;
+      dataPubl.appendChild(document.createTextNode(this.pubDate));
       a.href = this.link;
       var h2 = document.createElement('h2');
       h2.appendChild(document.createTextNode(this.title));
       a.appendChild(h2);
       div.appendChild(dataPubl);
       div.appendChild(a);
+      div.appendChild(description);
       div.appendChild(inputIsRead);
       return div;
     }
@@ -93,10 +165,10 @@ var FeedModel = function () {
   _createClass(FeedModel, [{
     key: 'getFeedRssPromis',
     value: function getFeedRssPromis() {
-      var _this2 = this;
+      var _this3 = this;
 
       return new Promise(function (resolve, reject) {
-        feednami.load(_this2.rssUrl, function (result) {
+        feednami.load(_this3.rssUrl, function (result) {
           if (result.error) {
             reject(result.error);
           } else {
@@ -109,10 +181,10 @@ var FeedModel = function () {
   }, {
     key: 'feedsPromis',
     value: function feedsPromis() {
-      var _this3 = this;
+      var _this4 = this;
 
       return new Promise(function (resolve, reject) {
-        var feedsPromise = _this3.getFeedRssPromis();
+        var feedsPromise = _this4.getFeedRssPromis();
         feedsPromise.then(function (items) {
           var _iteratorNormalCompletion = true;
           var _didIteratorError = false;
@@ -122,8 +194,8 @@ var FeedModel = function () {
             for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
               var item = _step.value;
 
-              item.idFeedModel = _this3.idFeedModel;
-              _this3._feedsItem.push(new ItemFeed(item));
+              item.idFeedModel = _this4.idFeedModel;
+              _this4._feedsItem.push(new ItemFeed(item));
             }
           } catch (err) {
             _didIteratorError = true;
@@ -219,11 +291,11 @@ var FeedsCollection = function () {
   }, {
     key: 'redesign',
     value: function redesign() {
-      var _this4 = this;
+      var _this5 = this;
 
       this.feedsItem = [];
       this.feeds.forEach(function (item) {
-        return _this4.feedsItem = _this4.feedsItem.concat(item.feeds);
+        return _this5.feedsItem = _this5.feedsItem.concat(item.feeds);
       });
       this.visibleAllFeeds();
     }
@@ -244,14 +316,14 @@ var FeedsCollection = function () {
   }, {
     key: 'feed',
     set: function set(rssFeed) {
-      var _this5 = this;
+      var _this6 = this;
 
       if (rssFeed instanceof FeedModel) {
         var feedsPromise = rssFeed.feedsPromis();
         feedsPromise.then(function () {
-          _this5.feeds.push(rssFeed);
-          _this5.feedsItem = _this5.feedsItem.concat(rssFeed.feeds);
-          _this5.visibleAllFeeds();
+          _this6.feeds.push(rssFeed);
+          _this6.feedsItem = _this6.feedsItem.concat(rssFeed.feeds);
+          _this6.visibleAllFeeds();
         });
       } else {
         throw new Error('неправильный класс!');
@@ -267,83 +339,13 @@ var FeedsCollection = function () {
 
 var feedsCollection = new FeedsCollection();
 try {
-  var a = new FeedModel('http://4pda.ru/feed/rss');
+  var a = new FeedModel('http://lenta.ru/rss/last24');
   feedsCollection.feed = new FeedModel('http://4pda.ru/feed/rss');
   feedsCollection.feed = new FeedModel('https://www.liteforex.ru/rss/company-news/');
   feedsCollection.feed = a;
 } catch (e) {
   console.log(e.name + ': ' + e.message);
 }
-
-///////////////////////////////////////////////////
-//
-//   Views
-//
-////////////////////////////////////////////////////
-/**
- * показ списка подписок
- */
-
-var FeedListView = function () {
-  function FeedListView(fileId) {
-    _classCallCheck(this, FeedListView);
-
-    this.msgAlert = document.getElementById(fileId);
-  }
-
-  _createClass(FeedListView, [{
-    key: 'view',
-    value: function view(arr) {
-      var _this6 = this;
-
-      if (!Array.isArray(arr)) {
-        throw new Error('не массив!');
-      }
-      while (this.msgAlert.hasChildNodes()) {
-        this.msgAlert.removeChild(this.msgAlert.lastChild);
-      }
-      var div = document.createElement('div');
-      div.className = "FeedsView";
-      arr.forEach(function (item) {
-        _this6.msgAlert.appendChild(item.view());
-        var buttonIsUnsubscribe = document.createElement('input');
-        buttonIsUnsubscribe.type = 'button';
-        buttonIsUnsubscribe.value = 'удалить';
-        buttonIsUnsubscribe.onclick = function () {
-          var msgAlert = document.getElementById('msgAlert');
-
-          while (msgAlert.hasChildNodes()) {
-            msgAlert.removeChild(msgAlert.lastChild);
-          }
-          feedsCollection.deleteFeed(item);
-        };
-        _this6.msgAlert.appendChild(buttonIsUnsubscribe);
-      });
-    }
-  }]);
-
-  return FeedListView;
-}();
-
-var feedListView = new FeedListView('msgAlert');
-
-var FeedView = function () {
-  function FeedView(item) {
-    _classCallCheck(this, FeedView);
-
-    this.element = 'div';
-    console.log(item.author);
-  }
-
-  _createClass(FeedView, [{
-    key: 'view',
-    value: function view() {
-      var elm = document.createElement(this.element);
-    }
-  }]);
-
-  return FeedView;
-}();
 
 ///////////////////////////////////////////////////
 //    Controllers
@@ -354,7 +356,6 @@ var FeedView = function () {
  * @constructor
  */
 
-
 var ButtonAddController = function ButtonAddController() {
   _classCallCheck(this, ButtonAddController);
 
@@ -362,7 +363,7 @@ var ButtonAddController = function ButtonAddController() {
   var textRss = document.getElementById('rssText');
 
   addRssButton.onclick = function () {
-    feeds.feed = new RssFeedModel(textRss.value);
+    feedsCollection.feed = new FeedModel(textRss.value);
     textRss.value = '';
   };
 };
@@ -374,15 +375,42 @@ var ButtonAddController = function ButtonAddController() {
  */
 
 
-var ButtonRssController = function ButtonRssController() {
-  _classCallCheck(this, ButtonRssController);
+var ButtonRssController = function () {
+  function ButtonRssController() {
+    _classCallCheck(this, ButtonRssController);
 
-  var rss = document.getElementById('rss');
-  var msgAlert = document.getElementById('msgAlert');
-  rss.onclick = function () {
-    feedListView.view(feedsCollection.feed);
-  };
-};
+    var rss = document.getElementById('rss');
+    var textRss = rss.textContent;
+    var msgAlert = document.getElementById('msgAlert');
+    this._flagVisible = false;
+    rss.onclick = this.click(textRss, this);
+  }
+
+  _createClass(ButtonRssController, [{
+    key: 'click',
+    value: function click(textButton, context) {
+      return function () {
+        if (!context.flagVisible) {
+          while (msgAlert.hasChildNodes()) {
+            msgAlert.removeChild(msgAlert.lastChild);
+            rss.textContent = textButton;
+          }
+        } else {
+          feedListView.view(feedsCollection.feed);
+          rss.textContent = "скрыть";
+        }
+      };
+    }
+  }, {
+    key: 'flagVisible',
+    get: function get() {
+      this._flagVisible = !this._flagVisible;
+      return this._flagVisible;
+    }
+  }]);
+
+  return ButtonRssController;
+}();
 /**
  *  кнопка сортировки по названию
  */
@@ -399,7 +427,12 @@ var ButtonSortTitle = function ButtonSortTitle() {
     }
 
     var sortTitle = function sortTitle(one, two) {
-      return two.title - one.title;
+      if (two.title < one.title) {
+        return -1;
+      } else if (two.title > one.title) {
+        return 1;
+      }
+      return 0;
     };
     feedsCollection.visibleAllFeeds(sortTitle);
   };
