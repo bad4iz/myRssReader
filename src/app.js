@@ -192,6 +192,7 @@ class FeedsCollection {
         this.feeds.push(rssFeed);
         this.feedsItem = this.feedsItem.concat(rssFeed.feeds);
         this.visibleAllFeeds();
+        
       });
     } else {
       throw new Error('неправильный класс!');
@@ -245,17 +246,39 @@ class FeedsCollection {
   }
 }
 
-let feedsCollection = new FeedsCollection();
-try {
-  let a = new FeedModel('http://lenta.ru/rss/last24');
-  feedsCollection.feed = new FeedModel('http://4pda.ru/feed/rss');
-  feedsCollection.feed = new FeedModel('https://www.liteforex.ru/rss/company-news/');
-  feedsCollection.feed = a;
-} catch (e) {
-  console.log(e.name + ': ' + e.message);
+let feedsCollection;
+feedsCollection = new FeedsCollection();
+// try {
+//   let a = new FeedModel('http://lenta.ru/rss/last24');
+//   feedsCollection.feed = new FeedModel('http://4pda.ru/feed/rss');
+//   feedsCollection.feed = new FeedModel('https://www.liteforex.ru/rss/company-news/');
+//   feedsCollection.feed = a;
+// } catch (e) {
+//   console.log(e.name + ': ' + e.message);
+// }
+
+if (window.localStorage.feedsCollectionArr) {
+  let feedsCollectionArr = JSON.parse(window.localStorage.feedsCollectionArr);
+  feedsCollectionArr.forEach(rss => {
+    feedsCollection.feed = new FeedModel(rss)
+  });
+  
+} else {
+  
+  try {
+    feedsCollectionArr = ['http://4pda.ru/feed/rss', 'https://www.liteforex.ru/rss/company-news/', 'http://lenta.ru/rss/last24'];
+    window.localStorage.feedsCollectionArr = JSON.stringify(feedsCollectionArr);
+    
+    feedsCollectionArr.forEach(rss => {
+      feedsCollection.feed = new FeedModel(rss)
+    });
+  } catch (e) {
+    console.log(e.name + ': ' + e.message);
+  }
+  
 }
 
-
+console.log(feedsCollection);
 ///////////////////////////////////////////////////
 //    Controllers
 ////////////////////////////////////////////////////
