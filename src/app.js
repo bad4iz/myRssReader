@@ -227,6 +227,19 @@ class FeedsCollection {
       return
     }
     this.feeds.splice(index, 1);
+  
+    let feedsCollectionArr = JSON.parse(window.localStorage.feedsCollectionArr);
+    let rssIndex = feedsCollectionArr.indexOf(feed.rssUrl);
+    console.log(feed.rssUrl);
+    if (rssIndex === -1) {
+      console.error("нет такого элемента");
+      return
+    }
+    feedsCollectionArr.splice(rssIndex, 1);
+    window.localStorage.feedsCollectionArr = JSON.stringify(feedsCollectionArr);
+    
+    
+    
     this.redesign();
     console.log("объект удален")
   }
@@ -288,12 +301,13 @@ class ButtonAddController {
     const textRss = document.getElementById('rssText');
     
     addRssButton.onclick = function() {
-      feedsCollection.feed = new FeedModel(textRss.value);
+      if (/^http/i.test(textRss.value)) {
+        feedsCollection.feed = new FeedModel(textRss.value);
   
-      let feedsCollectionArr = JSON.parse(window.localStorage.feedsCollectionArr);
-      feedsCollectionArr.push(textRss.value);
-      window.localStorage.feedsCollectionArr = JSON.stringify(feedsCollectionArr);
-
+        let feedsCollectionArr = JSON.parse(window.localStorage.feedsCollectionArr);
+        feedsCollectionArr.push(textRss.value);
+        window.localStorage.feedsCollectionArr = JSON.stringify(feedsCollectionArr);
+      }
       textRss.value = '';
     };
   }
