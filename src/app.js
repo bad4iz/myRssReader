@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////
 //   Views
 ////////////////////////////////////////////////////
@@ -107,6 +108,9 @@ ItemFeed.id = 0;
 class FeedModel {
   constructor(url) {
     if (/^http/i.test(url)) {
+  
+      
+      
       this.idFeedModel = FeedModel.id++;
       this.rssUrl = url;
       this._feedsItem = [];
@@ -248,14 +252,6 @@ class FeedsCollection {
 
 let feedsCollection;
 feedsCollection = new FeedsCollection();
-// try {
-//   let a = new FeedModel('http://lenta.ru/rss/last24');
-//   feedsCollection.feed = new FeedModel('http://4pda.ru/feed/rss');
-//   feedsCollection.feed = new FeedModel('https://www.liteforex.ru/rss/company-news/');
-//   feedsCollection.feed = a;
-// } catch (e) {
-//   console.log(e.name + ': ' + e.message);
-// }
 
 if (window.localStorage.feedsCollectionArr) {
   let feedsCollectionArr = JSON.parse(window.localStorage.feedsCollectionArr);
@@ -278,7 +274,6 @@ if (window.localStorage.feedsCollectionArr) {
   
 }
 
-console.log(feedsCollection);
 ///////////////////////////////////////////////////
 //    Controllers
 ////////////////////////////////////////////////////
@@ -294,6 +289,11 @@ class ButtonAddController {
     
     addRssButton.onclick = function() {
       feedsCollection.feed = new FeedModel(textRss.value);
+  
+      let feedsCollectionArr = JSON.parse(window.localStorage.feedsCollectionArr);
+      feedsCollectionArr.push(textRss.value);
+      window.localStorage.feedsCollectionArr = JSON.stringify(feedsCollectionArr);
+
       textRss.value = '';
     };
   }
