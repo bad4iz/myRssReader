@@ -106,7 +106,7 @@ var ItemFeed = function () {
     this.title = obj.title;
     this.description = obj.description;
     this.pubDate = obj.pubDate;
-    this.pubdate_ms = obj.pubdate_ms;
+    this.pubdatMs = obj.pubdatMs;
     this.author = obj.author;
     this.link = obj.link;
     this.isRead = false;
@@ -453,7 +453,7 @@ var ButtonSortDatePubl = function ButtonSortDatePubl() {
       textarea.removeChild(textarea.lastChild);
     }
     var sortDatePubl = function sortDatePubl(one, two) {
-      return two.pubdate_ms - one.pubdate_ms;
+      return two.pubdatMs - one.pubdatMs;
     };
     feedsCollection.visibleAllFeeds(sortDatePubl);
   };
