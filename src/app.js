@@ -217,7 +217,9 @@ class FeedsCollection {
 
     redesign() {
         this.feedsItem = [];
-        this.feeds.forEach(item => this.feedsItem = this.feedsItem.concat(item.feeds));
+        this.feeds.forEach(item => {
+            this.feedsItem = this.feedsItem.concat(item.feeds);
+        });
         this.visibleAllFeeds();
     }
 
