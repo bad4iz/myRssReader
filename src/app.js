@@ -247,7 +247,7 @@ if (window.localStorage.feedsCollectionArr) {
         feedsCollectionArr.forEach(rss => {
             feedsCollection.feed = new FeedModel(rss);
         });
-    } catch (e) { }
+    } catch (e) {alert(e); }
 }
 /**
  * Controllers
@@ -328,8 +328,8 @@ class ButtonSortTitle {
                 }
                 return 0;
             };
-            feedsCollection.visibleAllFeeds(sortTitle)
-        }
+            feedsCollection.visibleAllFeeds(sortTitle);
+        };
     }
 }
 
