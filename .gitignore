@@ -1,3 +1,4 @@
+.idea/
 .idea/jsLibraryMappings.xml
 .idea/misc.xml
 .idea/modules.xml
@@ -5,3 +6,8 @@
 .idea/watcherTasks.xml
 .idea/workspace.xml
 node_modules/
+.idea/inspectionProfiles/
+.idea/jsLinters/
+.idea/php.xml
+css/sass/resetStyleDefault.css.map
+css/sass/style.css.map
